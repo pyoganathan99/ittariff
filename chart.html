@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+</head>
+
+<body>
+    <canvas id="myChart"></canvas>
+</body>
+
+<script src="https://www.gstatic.com/firebasejs/5.10.0/firebase.js"></script>
+
+<script>
+
+    var config = {
+        apiKey: "AIzaSyApJ9qbXV8SJjmV_-H2rEFcy1g1Kmzuw6Y",
+        authDomain: "it-smart-tariff.firebaseapp.com",
+        databaseURL: "https://it-smart-tariff.firebaseio.com",
+        projectId: "it-smart-tariff",
+        storageBucket: "it-smart-tariff.appspot.com",
+        messagingSenderId: "580490206901"
+    };
+    firebase.initializeApp(config);
+
+    var snapshot;
+
+    var labels = [],
+        usages = [];
+
+    var data = {
+        labels: labels,
+        datasets: [{
+            label: 'Usage, Wh',
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: usages,
+        }]
+    }
+
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'line',
+        data: data,
+    });
+
+    async function start() {
+
+        firebase.database().ref('/123/usages').on('child_added', (e) => {
+            addData(chart, new Date(parseInt(e.key)).toLocaleTimeString(), e.val());
+        });
+
+    }
+
+    start();
+
+    function addData(chart, label, data) {
+        if (chart.data.labels.length > 20) {
+            chart.data.labels.shift();
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data.shift();
+            });
+        }
+        chart.data.labels.push(label);
+        chart.data.datasets.forEach((dataset) => {
+            dataset.data.push(data);
+        });
+        chart.update();
+    }
+
+</script>
+
+</html>
